@@ -7,7 +7,7 @@ require('dotenv').config()
 
 const dbName = 'edu-fun';
 const mongoUri = process.env.MONGODB_URI || `mongodb://localhost/${dbName}`
-mongoose.connect(mongoUri, { useNewUrlParser: true , useCreateIndex: true, useFindAndModify: false})
+mongoose.connect(mongoUri)
 
 const games = [
   {
