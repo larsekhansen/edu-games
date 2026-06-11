@@ -4,7 +4,7 @@ const User = require('../models/user');
 const Game = require('../models/game');
 const passport = require('passport');
 const config = require('../configs/index');
-const uploadCloud = require('../configs/cloudinary');
+const { uploadCloud, uploadImage } = require('../configs/cloudinary');
 
 // Route to get profile
 
@@ -23,23 +23,31 @@ router.get("/profile", passport.authenticate("jwt", config.jwtSession), (req, re
 });
 
 
-router.post('/add-game', uploadCloud.single('picture'), (req, res, next) => {
-  console.log('DEBUG req.file', req.body);
-  
-  let newGame = {
-    name: req.body.name,
-    description: req.body.description,
-    keywords: req.body.keywords.split(","),
-    gameURL: req.body.gameURL,
-    imgURL: req.file.url,
+router.post('/add-game', uploadCloud.single('picture'), async (req, res, next) => {
+  try {
+    console.log('DEBUG req.file', req.body);
+
+    const uploadedImage = req.file
+      ? await uploadImage(req.file.buffer, req.file.originalname)
+      : null;
+
+    const newGame = {
+      name: req.body.name,
+      description: req.body.description,
+      keywords: req.body.keywords.split(","),
+      gameURL: req.body.gameURL,
+      imgURL: uploadedImage ? uploadedImage.secure_url : undefined,
+    };
+
+    const createdGame = await Game.create(newGame);
+
+    res.json({
+      success: true,
+      newGame: createdGame
+    });
+  } catch (err) {
+    next(err);
   }
-  Game.create(newGame)
-    .then((newGame) => {
-      res.json({
-        success: true,
-        newGame
-      })
-    })
 });
 
 router.post('/add-to-fav',  passport.authenticate("jwt", config.jwtSession),(req, res, next) => {

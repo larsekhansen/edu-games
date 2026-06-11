@@ -3,7 +3,6 @@ require('dotenv').config()
 const express = require('express')
 const path = require('path')
 const logger = require('morgan')
-const bodyParser = require('body-parser')
 const cors = require('cors')
 const passport = require('passport')
 const { Strategy, ExtractJwt } = require("passport-jwt")
@@ -24,8 +23,8 @@ const app = express()
 app.use(cors())
 
 app.use(logger('dev'))
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
 
 // Set the public folder to "~/client/build/"
 // Example: http://localhost:3030/favicon.ico => Display "~/client/build/favicon.ico"

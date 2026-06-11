@@ -7,7 +7,7 @@ const dbName = 'edu-fun';
 const mongoUri = process.env.MONGODB_URI || `mongodb://localhost/${dbName}`
 
 // connect to the database
-mongoose.connect(mongoUri, { useNewUrlParser: true , useCreateIndex: true, useFindAndModify: false});
+mongoose.connect(mongoUri);
 
 const db = mongoose.connection;
 

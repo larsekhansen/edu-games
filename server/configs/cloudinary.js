@@ -1,7 +1,6 @@
 require("dotenv").config();
 
-const cloudinary = require("cloudinary");
-const cloudinaryStorage = require("multer-storage-cloudinary");
+const { v2: cloudinary } = require("cloudinary");
 const multer = require("multer");
 
 cloudinary.config({
@@ -10,12 +9,49 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET
 });
 
-var storage = cloudinaryStorage({
-  cloudinary: cloudinary,
-  folder: "edu-fun",
-  allowedFormats: ["jpg", "png"],
-  filename: (req, file, cb) => cb(undefined, new Date().getTime())
-})
+const allowedMimeTypes = new Set(["image/jpeg", "image/png"]);
 
-const uploadCloud = multer({ storage: storage })
-module.exports = uploadCloud;
+const uploadCloud = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    if (allowedMimeTypes.has(file.mimetype)) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error("Only JPG and PNG files are allowed"));
+  },
+});
+
+const uploadImage = (fileBuffer, originalname) => new Promise((resolve, reject) => {
+  const timestamp = Date.now();
+  const publicId = originalname
+    ? `${timestamp}-${originalname.replace(/[^a-zA-Z0-9._-]/g, "-")}`
+    : `${timestamp}`;
+
+  const stream = cloudinary.uploader.upload_stream(
+    {
+      folder: "edu-fun",
+      public_id: publicId,
+      resource_type: "image",
+    },
+    (error, result) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve(result);
+    }
+  );
+
+  stream.end(fileBuffer);
+});
+
+module.exports = {
+  uploadCloud,
+  uploadImage,
+};

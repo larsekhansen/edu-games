@@ -11,7 +11,7 @@ const errHandler = err => {
   throw err
 }
 
-export default {
+const api = {
   service,
 
   ////////// GAMES //////////
@@ -38,8 +38,7 @@ export default {
     .delete('/games/'+gameId)
     .then(res => res.data)
     .catch(errHandler)
-  }
-,
+  },
   postGames(data) {
     const formData = new FormData()
     formData.append("picture", data.file)
@@ -163,3 +162,5 @@ export default {
       .catch(errHandler)
   },
 }
+
+export default api
